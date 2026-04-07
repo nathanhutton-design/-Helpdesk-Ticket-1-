@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Helpdesk Ticketing App</title>
+
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #0f172a;
+      color: #e2e8f0;
+    }
+
+    header {
+      padding: 20px;
+      background: #1e293b;
+      text-align: center;
+      font-size: 1.5rem;
+    }
+
+    .container {
+      display: grid;
+      grid-template-columns: 250px 1fr;
+      height: calc(100vh - 80px);
+    }
+
+    .sidebar {
+      background: #020617;
+      padding: 20px;
+    }
+
+    .sidebar button {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 10px;
+      background: #3b82f6;
+      border: none;
+      color: white;
+      cursor: pointer;
+      border-radius: 8px;
+    }
+
+    .main {
+      padding: 20px;
+      overflow-y: auto;
+    }
+
+    .card {
+      background: #1e293b;
+      padding: 15px;
+      margin-bottom: 10px;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    .card:hover {
+      transform: scale(1.02);
+      box-shadow: 0 0 10px #3b82f6;
+    }
+
+    .status {
+      font-size: 0.8rem;
+      padding: 3px 8px;
+      border-radius: 6px;
+    }
+
+    .open { background: #ef4444; }
+    .progress { background: #f59e0b; }
+    .closed { background: #22c55e; }
+
+    .modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.7);
+      display: none;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .modal-content {
+      background: #1e293b;
+      padding: 20px;
+      border-radius: 12px;
+      width: 400px;
+    }
+
+    input, textarea, select {
+      width: 100%;
+      margin-bottom: 10px;
+      padding: 8px;
+      border-radius: 6px;
+      border: none;
+    }
+
+    .btn {
+      background: #3b82f6;
+      color: white;
+      padding: 10px;
+      border: none;
+      width: 100%;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+<header>🎫 Helpdesk Ticketing Dashboard</header>
+
+<div class="container">
+  <div class="sidebar">
+    <button onclick="openModal()">+ New Ticket</button>
+  </div>
+
+  <div class="main" id="ticketList"></div>
+</div>
+
+<div class="modal" id="modal">
+  <div class="modal-content">
+    <h3>Create Ticket</h3>
+    <input id="title" placeholder="Title" />
+    <textarea id="description" placeholder="Description"></textarea>
+    <select id="status">
+      <option value="open">Open</option>
+      <option value="progress">In Progress</option>
+      <option value="closed">Closed</option>
+    </select>
+    <button class="btn" onclick="addTicket()">Submit</button>
+  </div>
+</div>
+
+<script>
+  let tickets = JSON.parse(localStorage.getItem("tickets")) || [];
+
+  function saveTickets() {
+    localStorage.setItem("tickets", JSON.stringify(tickets));
+  }
+
+  function renderTickets() {
+    const list = document.getElementById("ticketList");
+    list.innerHTML = "";
+
+    tickets.forEach((t, index) => {
+      const div = document.createElement("div");
+      div.className = "card";
+
+      div.innerHTML = `
+        <h4>${t.title}</h4>
+        <p>${t.description}</p>
+        <span class="status ${t.status}">${t.status}</span>
+        <br/><br/>
+        <button onclick="deleteTicket(${index})">Delete</button>
+      `;
+
+      list.appendChild(div);
+    });
+  }
+
+  function addTicket() {
+    const title = document.getElementById("title").value;
+    const description = document.getElementById("description").value;
+    const status = document.getElementById("status").value;
+
+    tickets.push({ title, description, status });
+    saveTickets();
+    renderTickets();
+    closeModal();
+  }
+
+  function deleteTicket(index) {
+    tickets.splice(index, 1);
+    saveTickets();
+    renderTickets();
+  }
+
+  function openModal() {
+    document.getElementById("modal").style.display = "flex";
+  }
+
+  function closeModal() {
+    document.getElementById("modal").style.display = "none";
+  }
+
+  renderTickets();
+</script>
+
+</body>
+</html>
