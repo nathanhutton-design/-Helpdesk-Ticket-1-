@@ -31,7 +31,7 @@
       padding: 20px;
     }
 
-    .sidebar button {
+    .sidebar button, .sidebar input {
       width: 100%;
       padding: 10px;
       margin-bottom: 10px;
@@ -40,6 +40,11 @@
       color: white;
       cursor: pointer;
       border-radius: 8px;
+    }
+
+    .sidebar input {
+      background: #1e293b;
+      cursor: text;
     }
 
     .main {
@@ -52,7 +57,6 @@
       padding: 15px;
       margin-bottom: 10px;
       border-radius: 12px;
-      cursor: pointer;
       transition: 0.3s;
     }
 
@@ -116,6 +120,7 @@
 <div class="container">
   <div class="sidebar">
     <button onclick="openModal()">+ New Ticket</button>
+    <input id="search" placeholder="Search tickets..." onkeyup="renderTickets()" />
   </div>
 
   <div class="main" id="ticketList"></div>
@@ -124,13 +129,21 @@
 <div class="modal" id="modal">
   <div class="modal-content">
     <h3>Create Ticket</h3>
-    <input id="title" placeholder="Title" />
+
+    <input id="firstName" placeholder="First Name" />
+    <input id="lastName" placeholder="Last Name" />
+    <input id="contact" placeholder="Contact Number" />
+    <input id="department" placeholder="Department" />
+
+    <input id="title" placeholder="Issue Title" />
     <textarea id="description" placeholder="Description"></textarea>
+
     <select id="status">
       <option value="open">Open</option>
       <option value="progress">In Progress</option>
       <option value="closed">Closed</option>
     </select>
+
     <button class="btn" onclick="addTicket()">Submit</button>
   </div>
 </div>
@@ -144,33 +157,71 @@
 
   function renderTickets() {
     const list = document.getElementById("ticketList");
+    const search = document.getElementById("search").value.toLowerCase();
+
     list.innerHTML = "";
 
-    tickets.forEach((t, index) => {
-      const div = document.createElement("div");
-      div.className = "card";
+    tickets
+      .filter(t => 
+        t.title.toLowerCase().includes(search) || 
+        t.description.toLowerCase().includes(search) ||
+        t.firstName.toLowerCase().includes(search) ||
+        t.lastName.toLowerCase().includes(search)
+      )
+      .forEach((t, index) => {
+        const div = document.createElement("div");
+        div.className = "card";
 
-      div.innerHTML = `
-        <h4>${t.title}</h4>
-        <p>${t.description}</p>
-        <span class="status ${t.status}">${t.status}</span>
-        <br/><br/>
-        <button onclick="deleteTicket(${index})">Delete</button>
-      `;
+        div.innerHTML = `
+          <h4>${t.title}</h4>
+          <p><strong>${t.firstName} ${t.lastName}</strong></p>
+          <p>${t.department} | ${t.contact}</p>
+          <p>${t.description}</p>
+          <small>${t.createdAt || ""}</small><br/>
+          <span class="status ${t.status}">${t.status}</span>
+          <br/><br/>
+          <button onclick="deleteTicket(${index})">Delete</button>
+        `;
 
-      list.appendChild(div);
-    });
+        list.appendChild(div);
+      });
   }
 
   function addTicket() {
-    const title = document.getElementById("title").value;
-    const description = document.getElementById("description").value;
+    const firstName = document.getElementById("firstName").value.trim();
+    const lastName = document.getElementById("lastName").value.trim();
+    const contact = document.getElementById("contact").value.trim();
+    const department = document.getElementById("department").value.trim();
+    const title = document.getElementById("title").value.trim();
+    const description = document.getElementById("description").value.trim();
     const status = document.getElementById("status").value;
 
-    tickets.push({ title, description, status });
+    if (!firstName || !lastName || !contact || !department || !title || !description) {
+      alert("Please fill in all fields.");
+      return;
+    }
+
+    tickets.push({
+      firstName,
+      lastName,
+      contact,
+      department,
+      title,
+      description,
+      status,
+      createdAt: new Date().toLocaleString()
+    });
+
     saveTickets();
     renderTickets();
     closeModal();
+
+    document.getElementById("firstName").value = "";
+    document.getElementById("lastName").value = "";
+    document.getElementById("contact").value = "";
+    document.getElementById("department").value = "";
+    document.getElementById("title").value = "";
+    document.getElementById("description").value = "";
   }
 
   function deleteTicket(index) {
